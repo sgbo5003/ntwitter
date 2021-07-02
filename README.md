@@ -22,6 +22,8 @@
   - react에 firebase.js 파일 생성
     - firebase.js
 
+<br />
+
 ## #1.1 Securing the keys
 
 > 환경변수 설정
@@ -36,6 +38,8 @@
 - .env 파일 위치
   - 항상 최상단에 위치해 있어야 한다.
 
+<br />
+
 ## #1.2 Router Setup
 
 > 폴더 생성
@@ -48,6 +52,8 @@
 
 - `npm i react-router-dom`
 
+<br />
+
 ## #2.0 Using Firebase Auth
 
 > auth 사용
@@ -56,13 +62,19 @@
 2. `import { authService } from '../fbase';`
 3. `const [isLoggedIn, setIsLoggedIn] = useState(authService.currentUser);`
 
+<br />
+
 ## #2.1 Login Form part One
 
 > firebase Authentication github과 연동
 
+<br />
+
 ## #2.2 Recap
 
 > 요약
+
+<br />
 
 ## #2.3 Creating Account
 
@@ -78,9 +90,13 @@
     }
     ```
 
+<br />
+
 ## #2.4 Log In
 
 > 로그인 처리
+
+<br />
 
 ## #2.5 Social Login
 
@@ -99,6 +115,8 @@
   }
   const data = await authService.signInWithPopup(provider);
   ```
+
+<br />
 
 ## #2.6 Log Out
 
@@ -133,6 +151,181 @@
   }
   ```
 
+<br />
+
 ## #3.0 Form and Database Setup
 
 > Home화면에 form 만들고 firebase database 시작할 준비
+
+<br />
+
+## #3.1 Nweeting
+
+> firebase
+
+- firebase
+  - 사용하기 쉬운 대신에 자유도가 낮다.
+
+> 트윗 올리기
+
+- Firestore database에 트윗이 저장되게 된다.
+- 코드
+
+  ```jsx
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    await dbService.collection("nweets").add({
+      nweet,
+      createdAt: Date.now(),
+    });
+    setNweet("");
+  };
+  ```
+
+<br />
+
+## #3.2 Getting the Nweets
+
+> 트윗을 어떻게 가져올지
+
+- 코드
+
+  ```jsx
+  const getNweets = async () => {
+    const dbNweets = await dbService.collection("nweets").get();
+    dbNweets.forEach((document) => {
+      const nweetObject = {
+        ...document.data(),
+        id: document.id,
+      };
+      setNweets((prev) => [nweetObject, ...prev]);
+    });
+  };
+  ```
+
+> 트윗을 생성하고 읽을 수 있게 되었다.
+
+<br />
+
+## #3.3 Realtime Nweets
+
+> 실시간으로 트윗 남기고 지우기
+
+- 코드
+
+  ```jsx
+  useEffect(() => {
+    dbService.collection("nweets").onSnapshot((snapshot) => {
+      const nweetArray = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setNweets(nweetArray);
+    });
+  }, []);
+  ```
+
+<br />
+
+## #3.4 Delete and Update part One
+
+> Delete 기능 추가
+
+- 사용자를 식별해 나만 지울 수 있도록 기능 추가
+
+  - 코드
+
+    ```jsx
+    const onDeleteClick = async () => {
+      const ok = window.confirm("Are you sure you want to delete this nweet?");
+      if (ok) {
+        await dbService.doc(`nweets/${nweetObj.id}`).delete();
+      }
+    };
+    ```
+
+<br />
+
+## #3.5 Delete and Update part Two
+
+> 수정 기능 추가
+
+- 코드
+
+  ```jsx
+  const toggleEditing = () => setEditing((prev) => !prev);
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    console.log(nweetObj, newNweet);
+    await dbService.doc(`nweets/${nweetObj.id}`).update({
+      text: newNweet,
+    });
+    setEditing(false);
+  };
+  ```
+
+<br />
+
+## #3.6 Recap
+
+> 요약
+
+- onSnapshot
+  - onSnapshot은 기본적으로 데이터베이스에 무슨일이 있을 때, 알림을 받는다.
+
+<br />
+
+## #4.0 Preview Images part One
+
+> 파일 읽어오기
+
+- 코드
+
+  ```jsx
+  const onFileChange = (event) => {
+    const {
+      target: { files },
+    } = event;
+    const theFile = files[0];
+    const reader = new FileReader();
+    reader.onloadend = (finishedEvent) => {
+      console.log(finishedEvent);
+    };
+    reader.readAsDataURL(theFile);
+  };
+  ```
+
+<br />
+
+## #4.1 Preview Images part Two
+
+> 사진 띄우기 & 사진 지우기
+
+- 코드
+
+  ```jsx
+  const onFileChange = (event) => {
+    const {
+      target: { files },
+    } = event;
+    const theFile = files[0];
+    const reader = new FileReader();
+    reader.onloadend = (finishedEvent) => {
+      const {
+        currentTarget: { result },
+      } = finishedEvent;
+      setAttachment(result);
+    };
+    reader.readAsDataURL(theFile);
+  };
+  const onClearAttachment = () => setAttachment(null);
+  ```
+
+<br />
+
+## #4.2 Uploading
+
+> uuid 설치
+
+- npm install uuid
+- uuid : 기본적으로 어떤 특별한 식별자를 랜덤으로 생성해준다.
