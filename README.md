@@ -1,70 +1,138 @@
-# Getting Started with Create React App
+# 노마드 코더 트위터 클론코딩
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## #1 React + Firebase Setup
 
-## Available Scripts
+> git setting
 
-In the project directory, you can run:
+1. git에 repository 생성
+2. git remote add origin [https://github.com/sgbo5003/ntwitter.git](https://github.com/sgbo5003/ntwitter.git)
+3. git add .
+4. git commit -m "Initiailization"
+5. git push origin master
 
-### `yarn start`
+> react & firebase setting
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- react setting
+  - `npx create-react-app 프로젝트명`
+  - 불필요한 파일들 삭제
+    - ex) index.css, App.css 등등
+- firebase setting
+  - firebase 홈페이지에서 프로젝트 생성
+  - `npm install —save firebase`
+  - react에 firebase.js 파일 생성
+    - firebase.js
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## #1.1 Securing the keys
 
-### `yarn test`
+> 환경변수 설정
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- react는 환경변수를 써야 한다면 REACT_APP으로 시작해야 하고 그 뒤로 이름을 붙여주어야 한다.
+  - ex) REACT*APP*'SOMETING'
+- 사용
+  - process.env.REACT_APP_API_KEY
+- 사용하는 이유
+  - .env 파일을 만들어 키나 URL등을 환경변수로 만들어 놓는 이유는 github에 올리는것을 방지하기 위해서 이다.
+  - 하지만 어쩔 수 없이 사용자들에게는 보이게 된다.
+- .env 파일 위치
+  - 항상 최상단에 위치해 있어야 한다.
 
-### `yarn build`
+## #1.2 Router Setup
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+> 폴더 생성
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- src 폴더 안에
+  - components 폴더 생성
+  - routes 폴더 생성
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+> router 사용
 
-### `yarn eject`
+- `npm i react-router-dom`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## #2.0 Using Firebase Auth
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+> auth 사용
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+1. `export const authService = firebase.auth();`
+2. `import { authService } from '../fbase';`
+3. `const [isLoggedIn, setIsLoggedIn] = useState(authService.currentUser);`
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## #2.1 Login Form part One
 
-## Learn More
+> firebase Authentication github과 연동
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## #2.2 Recap
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+> 요약
 
-### Code Splitting
+## #2.3 Creating Account
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- firebase와 연동하여 함수를 써서 로그인 하기
 
-### Analyzing the Bundle Size
+  - 코드
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+    ```jsx
+    if (newAccount) {
+      data = await authService.createUserWithEmailAndPassword(email, password);
+    } else {
+      data = await authService.signInWithEmailAndPassword(email, password);
+    }
+    ```
 
-### Making a Progressive Web App
+## #2.4 Log In
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+> 로그인 처리
 
-### Advanced Configuration
+## #2.5 Social Login
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+> firebase를 통한 소셜로그인 연동
 
-### Deployment
+- 깃헙 소셜로그인
+- 구글 소셜로그인
+- 코드
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+  ```jsx
+  let provider;
+  if (name === "google") {
+    provider = new firebaseInstance.auth.GoogleAuthProvider();
+  } else if (name === "github") {
+    provider = new firebaseInstance.auth.GithubAuthProvider();
+  }
+  const data = await authService.signInWithPopup(provider);
+  ```
 
-### `yarn build` fails to minify
+## #2.6 Log Out
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+> useHistory를 이용한 로그아웃 기능 구현
+
+- goBack()과 비슷한 기능
+- 코드
+
+  ```jsx
+  import { useHistory } from "react-router-dom";
+
+  let history = useHistory();
+
+  function HomeButton() {
+
+  function handleClick() {
+
+  history.push("/home");
+
+  }
+
+  return (
+
+  <button type="button" onClick={handleClick}>;
+
+  Go home
+
+  </button>;
+
+  );
+
+  }
+  ```
+
+## #3.0 Form and Database Setup
+
+> Home화면에 form 만들고 firebase database 시작할 준비
